@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { format } from 'date-fns'
 import * as XLSX from 'xlsx'
-import { DocumentArrowDownIcon, MagnifyingGlassIcon, EyeIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { DocumentArrowDownIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 const pmRecords = ref<any[]>([])
 const loading = ref(true)
@@ -197,8 +197,7 @@ const exportExcel = () => {
                   @click="openDetail(record)"
                   class="inline-flex items-center gap-2 bg-indigo-500/80 hover:bg-indigo-600/80 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors"
                 >
-                  <class="w-4" />
-                  <span>ดูรายละเอียด</span>
+                  ดูรายละเอียด
                 </button>
               </td>
               <td class="px-6 py-4 text-right font-medium text-red-500">{{ Number(record.cost).toLocaleString() }}</td>
