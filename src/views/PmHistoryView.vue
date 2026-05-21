@@ -106,51 +106,6 @@ const exportExcel = () => {
     { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 40 },
   ]
 
-  // Add borders to table cells (header row A4:I4, data rows, and total row)
-  const borderStyle = { style: 'thin', color: { rgb: '000000' } }
-  const lastDataRow = 4 + dataRows.length // A5 is row index 4 (0-based)
-
-  // Apply borders to header row (row 4) and data rows (row 5 to lastDataRow)
-  for (let row = 4; row <= lastDataRow; row++) {
-    for (let col = 0; col < 9; col++) { // A to I (0 to 8)
-      const cellRef = XLSX.utils.encode_cell({ r: row, c: col })
-      if (worksheet[cellRef]) {
-        worksheet[cellRef].s = {
-          border: {
-            top: borderStyle,
-            bottom: borderStyle,
-            left: borderStyle,
-            right: borderStyle
-          }
-        }
-      }
-    }
-  }
-
-  // Apply borders to total row label and value cells
-  const totalLabelCell = XLSX.utils.encode_cell({ r: totalRowIndex, c: 6 })
-  const totalCostCell = XLSX.utils.encode_cell({ r: totalRowIndex, c: 7 })
-  if (worksheet[totalLabelCell]) {
-    worksheet[totalLabelCell].s = {
-      border: {
-        top: borderStyle,
-        bottom: borderStyle,
-        left: borderStyle,
-        right: borderStyle
-      }
-    }
-  }
-  if (worksheet[totalCostCell]) {
-    worksheet[totalCostCell].s = {
-      border: {
-        top: borderStyle,
-        bottom: borderStyle,
-        left: borderStyle,
-        right: borderStyle
-      }
-    }
-  }
-
   XLSX.utils.book_append_sheet(workbook, worksheet, 'PM Report')
   const filename = `รายงาน_PM_${fromLabel.replace(/\//g, '-')}_ถึง_${toLabel.replace(/\//g, '-')}.xlsx`
   XLSX.writeFile(workbook, filename)

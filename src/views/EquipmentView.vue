@@ -16,6 +16,8 @@ const isEditModalOpen = ref(false)
 const isAssignModalOpen = ref(false)
 const selectedEquipment = ref<any>(null)
 const assignStaffId = ref('')
+const staffSearchQuery = ref('')
+const isStaffDropdownOpen = ref(false)
 
 const newEquipment = ref({
   equipmentGroup: 'COMPUTER',
@@ -146,8 +148,31 @@ const deleteEquipment = async (id: string) => {
 const openAssign = (eq: any) => {
   selectedEquipment.value = eq
   assignStaffId.value = eq.assignedStaffId || ''
+  staffSearchQuery.value = ''
+  isStaffDropdownOpen.value = false
   isAssignModalOpen.value = true
 }
+
+const filteredStaffs = computed(() => {
+  const staffList = staffs.value.filter(s => s.role === 'STAFF')
+  if (!staffSearchQuery.value) return staffList
+  const query = staffSearchQuery.value.toLowerCase()
+  return staffList.filter(s =>
+    (s.name && s.name.toLowerCase().includes(query)) ||
+    (s.username && s.username.toLowerCase().includes(query))
+  )
+})
+
+const selectStaff = (staffId: string) => {
+  assignStaffId.value = staffId
+  isStaffDropdownOpen.value = false
+}
+
+const selectedStaffName = computed(() => {
+  if (!assignStaffId.value) return ''
+  const staff = staffs.value.find(s => s.id === assignStaffId.value)
+  return staff ? (staff.name || staff.username) : ''
+})
 
 const saveAssign = async () => {
   try {
@@ -155,6 +180,7 @@ const saveAssign = async () => {
       assignedStaffId: assignStaffId.value || null
     })
     isAssignModalOpen.value = false
+    staffSearchQuery.value = ''
     fetchEquipment()
   } catch (error) {
     console.error('Failed to assign staff', error)
@@ -467,14 +493,54 @@ const saveAssign = async () => {
           <p class="text-sm text-gray-500">{{ selectedEquipment?.name }} ({{ selectedEquipment?.serialNumber }})</p>
         </div>
         <div class="p-6 space-y-4">
-          <div>
+          <div class="relative">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Staff</label>
-            <select v-model="assignStaffId" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
-              <option value="">Unassigned</option>
-              <option v-for="s in staffs.filter(s => s.role === 'STAFF')" :key="s.id" :value="s.id">
-                {{ s.name || s.username }}
-              </option>
-            </select>
+            <div class="relative">
+              <input
+                v-model="staffSearchQuery"
+                @focus="isStaffDropdownOpen = true"
+                type="text"
+                :placeholder="selectedStaffName || 'พิมพ์ชื่อหรือ Username เพื่อค้นหา...'
+"
+                class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 pr-10"
+              />
+              <button
+                v-if="assignStaffId"
+                @click="assignStaffId = ''; staffSearchQuery = ''"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+            <div
+              v-if="isStaffDropdownOpen"
+              class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+            >
+              <div
+                @click="selectStaff(''); isStaffDropdownOpen = false"
+                class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer text-gray-500"
+              >
+                Unassigned
+              </div>
+              <div
+                v-for="s in filteredStaffs"
+                :key="s.id"
+                @click="selectStaff(s.id)"
+                class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                :class="{ 'bg-indigo-50 dark:bg-indigo-900/30': assignStaffId === s.id }"
+              >
+                <div class="font-medium">{{ s.name || s.username }}</div>
+                <div v-if="s.name && s.username" class="text-xs text-gray-500">{{ s.username }}</div>
+              </div>
+              <div v-if="filteredStaffs.length === 0" class="px-3 py-2 text-gray-400 text-sm">
+                ไม่พบผู้ใช้
+              </div>
+            </div>
+            <div
+              v-if="isStaffDropdownOpen"
+              @click="isStaffDropdownOpen = false"
+              class="fixed inset-0 z-40"
+            ></div>
           </div>
           <div class="flex justify-end gap-3">
             <button @click="isAssignModalOpen = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors">Cancel</button>
