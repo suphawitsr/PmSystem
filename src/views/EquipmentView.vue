@@ -18,7 +18,7 @@ const selectedEquipment = ref<any>(null)
 const assignStaffId = ref('')
 
 const newEquipment = ref({
-  equipmentGroup: 'PC',
+  equipmentGroup: 'COMPUTER',
   type: '',
   serialNumber: '',
   brand: '',
@@ -86,7 +86,7 @@ const addEquipment = async () => {
   try {
     await axios.post('/api/equipment', newEquipment.value)
     isAddModalOpen.value = false
-    newEquipment.value = { equipmentGroup: 'PC', type: '', serialNumber: '', brand: '', model: '', name: '', zoneCode: '', assignedStaffId: '' }
+    newEquipment.value = { equipmentGroup: 'COMPUTER', type: '', serialNumber: '', brand: '', model: '', name: '', zoneCode: '', assignedStaffId: '' }
     fetchEquipment()
   } catch (error) {
     console.error('Failed to add equipment', error)
@@ -319,7 +319,7 @@ const saveAssign = async () => {
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Group</label>
               <select v-model="newEquipment.equipmentGroup" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
-                <option value="PC">PC</option>
+                <option value="COMPUTER">Computer</option>
                 <option value="PRINTER">Printer</option>
                 <option value="NETWORK">Network</option>
               </select>
@@ -375,7 +375,7 @@ const saveAssign = async () => {
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Group</label>
               <select v-model="editForm.equipmentGroup" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
-                <option value="PC">PC</option>
+                <option value="COMPUTER">Computer</option>
                 <option value="PRINTER">Printer</option>
                 <option value="NETWORK">Network</option>
               </select>
