@@ -16,7 +16,7 @@ import './config/api' // Sets axios.defaults.baseURL
 const route = useRoute()
 const router = useRouter()
 
-const isAuthRoute = computed(() => ['login'].includes(route.name as string))
+const isAuthRoute = computed(() => ['login', 'register'].includes(route.name as string))
 const user = ref<any>(null)
 const assignedEquipments = ref<any[]>([])
 const notifOpen = ref(false)
