@@ -6,9 +6,17 @@ import { format, isBefore, addDays, startOfMonth } from 'date-fns'
 import { ExclamationTriangleIcon, CheckCircleIcon, BellIcon } from '@heroicons/vue/24/outline'
 
 const equipments = ref<any[]>([])
+const staffs = ref<any[]>([])
 const pmRecords = ref<any[]>([])
 const loading = ref(true)
 const user = ref<any>(JSON.parse(localStorage.getItem('user') || '{}'))
+
+// Assign modal state
+const isAssignModalOpen = ref(false)
+const selectedEquipment = ref<any>(null)
+const assignStaffId = ref('')
+const staffSearchQuery = ref('')
+const isStaffDropdownOpen = ref(false)
 
 // Month range filter
 const filterFrom = ref(format(startOfMonth(new Date()), 'yyyy-MM'))
@@ -37,6 +45,7 @@ const fetchPmRecords = async () => {
 onMounted(() => {
   fetchEquipment()
   fetchPmRecords()
+  fetchStaffs()
 })
 
 // Compute completed PMs within selected month range
@@ -65,6 +74,60 @@ const getAlerts = computed(() => {
 const daysUntil = (dateStr: string) => {
   const diff = new Date(dateStr).getTime() - new Date().getTime()
   return Math.ceil(diff / (1000 * 60 * 60 * 24))
+}
+
+const isAdmin = computed(() => user.value.role === 'ADMIN')
+
+const fetchStaffs = async () => {
+  if (!isAdmin.value) return
+  try {
+    const res = await axios.get('/user')
+    staffs.value = res.data
+  } catch (error) {
+    console.error('Failed to fetch staffs', error)
+  }
+}
+
+const openAssign = (eq: any) => {
+  selectedEquipment.value = eq
+  assignStaffId.value = eq.assignedStaffId || ''
+  staffSearchQuery.value = ''
+  isStaffDropdownOpen.value = false
+  isAssignModalOpen.value = true
+}
+
+const filteredStaffs = computed(() => {
+  const staffList = staffs.value.filter(s => s.role === 'STAFF')
+  if (!staffSearchQuery.value) return staffList
+  const query = staffSearchQuery.value.toLowerCase()
+  return staffList.filter(s =>
+    (s.name && s.name.toLowerCase().includes(query)) ||
+    (s.username && s.username.toLowerCase().includes(query))
+  )
+})
+
+const selectStaff = (staffId: string) => {
+  assignStaffId.value = staffId
+  isStaffDropdownOpen.value = false
+}
+
+const selectedStaffName = computed(() => {
+  if (!assignStaffId.value) return ''
+  const staff = staffs.value.find(s => s.id === assignStaffId.value)
+  return staff ? (staff.name || staff.username) : ''
+})
+
+const saveAssign = async () => {
+  try {
+    await axios.patch(`/api/equipment/${selectedEquipment.value.id}`, {
+      assignedStaffId: assignStaffId.value || null
+    })
+    isAssignModalOpen.value = false
+    staffSearchQuery.value = ''
+    await fetchEquipment()
+  } catch (error) {
+    console.error('Failed to assign staff', error)
+  }
 }
 </script>
 
@@ -202,20 +265,94 @@ const daysUntil = (dateStr: string) => {
                 Unassigned
               </span>
 
-              <!-- Admin: Link to Equipment Management for assignment -->
-              <router-link
+              <!-- Admin: Quick Assign button -->
+              <button
                 v-if="user.role === 'ADMIN'"
-                to="/equipment"
-                class="text-xs text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
-                title="ไปที่ Equipment Management เพื่อมอบหมายงาน"
+                @click="openAssign(eq)"
+                class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-colors"
               >
-                จัดการที่ Equipment →
-              </router-link>
+                จัดการ
+              </button>
             </div>
           </div>
         </li>
       </ul>
     </div>
 
+  </div>
+
+  <!-- Assign Staff Modal -->
+  <div v-if="isAssignModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-indigo-600 to-purple-600">
+        <h3 class="text-lg font-bold text-white">มอบหมายงาน PM</h3>
+        <p class="text-sm text-indigo-100">{{ selectedEquipment?.name }} ({{ selectedEquipment?.serialNumber }})</p>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-4">
+          <div class="text-sm text-gray-600 dark:text-gray-400">Next PM Due:</div>
+          <div class="font-semibold text-amber-600">
+            {{ selectedEquipment?.nextPmDate ? format(new Date(selectedEquipment.nextPmDate), 'dd MMM yyyy') : 'N/A' }}
+            <span class="text-xs">
+              ({{ daysUntil(selectedEquipment?.nextPmDate) < 0 ? 'เกินกำหนด' : `อีก ${daysUntil(selectedEquipment?.nextPmDate)} วัน` }})
+            </span>
+          </div>
+        </div>
+
+        <div class="relative">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">เลือก Staff</label>
+          <div class="relative">
+            <input
+              v-model="staffSearchQuery"
+              @focus="isStaffDropdownOpen = true"
+              type="text"
+              :placeholder="selectedStaffName || 'พิมพ์ชื่อหรือ Username เพื่อค้นหา...'"
+              class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 pr-10"
+            />
+            <button
+              v-if="assignStaffId"
+              @click="assignStaffId = ''; staffSearchQuery = ''"
+              class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              ×
+            </button>
+          </div>
+          <div
+            v-if="isStaffDropdownOpen"
+            class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+          >
+            <div
+              @click="selectStaff(''); isStaffDropdownOpen = false"
+              class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer text-gray-500"
+            >
+              ยังไม่มอบหมาย
+            </div>
+            <div
+              v-for="s in filteredStaffs"
+              :key="s.id"
+              @click="selectStaff(s.id)"
+              class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+              :class="{ 'bg-indigo-50 dark:bg-indigo-900/30': assignStaffId === s.id }"
+            >
+              <div class="font-medium">{{ s.name || s.username }}</div>
+              <div v-if="s.name && s.username" class="text-xs text-gray-500">{{ s.username }}</div>
+            </div>
+            <div v-if="filteredStaffs.length === 0" class="px-3 py-2 text-gray-400 text-sm">
+              ไม่พบผู้ใช้
+            </div>
+          </div>
+          <div
+            v-if="isStaffDropdownOpen"
+            @click="isStaffDropdownOpen = false"
+            class="fixed inset-0 z-40"
+          ></div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button @click="isAssignModalOpen = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors">ยกเลิก</button>
+          <button @click="saveAssign" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">บันทึก</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

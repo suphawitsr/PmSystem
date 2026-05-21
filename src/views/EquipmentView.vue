@@ -34,6 +34,40 @@ const editForm = ref<any>({})
 
 const isAdmin = computed(() => user.value.role === 'ADMIN')
 
+// Pagination
+const currentPage = ref(1)
+const itemsPerPage = 10
+
+const totalPages = computed(() => Math.ceil(filteredEquipments.value.length / itemsPerPage))
+
+const paginatedEquipments = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredEquipments.value.slice(start, end)
+})
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+const visiblePages = computed(() => {
+  const pages: number[] = []
+  const maxVisible = 5
+  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
+  let end = Math.min(totalPages.value, start + maxVisible - 1)
+  
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
+  }
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  return pages
+})
+
 // Assignment filter
 const assignmentFilter = ref<'all' | 'assigned' | 'unassigned'>('all')
 
@@ -72,6 +106,11 @@ const filteredEquipments = computed(() => {
   // Apply zone filter
   if (zoneFilter.value !== 'all') {
     filtered = filtered.filter(e => e.zoneCode === zoneFilter.value)
+  }
+  
+  // Reset to page 1 when filters change
+  if (currentPage.value > Math.ceil(filtered.length / itemsPerPage)) {
+    currentPage.value = 1
   }
   
   return filtered
@@ -299,7 +338,7 @@ const saveAssign = async () => {
               <td colspan="7" class="px-6 py-8 text-center text-gray-500">ไม่พบอุปกรณ์</td>
             </tr>
             <tr
-              v-for="eq in filteredEquipments"
+              v-for="eq in paginatedEquipments"
               :key="eq.id"
               class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
@@ -370,6 +409,62 @@ const saveAssign = async () => {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div class="text-sm text-gray-500">
+          แสดง {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, filteredEquipments.length) }} จาก {{ filteredEquipments.length }} รายการ
+        </div>
+        <div class="flex items-center gap-1">
+          <button
+            @click="goToPage(currentPage - 1)"
+            :disabled="currentPage === 1"
+            class="px-3 py-1 rounded-lg text-sm font-medium transition-colors"
+            :class="currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'"
+          >
+            ←
+          </button>
+          
+          <button
+            v-if="visiblePages[0] > 1"
+            @click="goToPage(1)"
+            class="px-3 py-1 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            1
+          </button>
+          <span v-if="visiblePages[0] > 2" class="px-2 text-gray-400">...</span>
+          
+          <button
+            v-for="page in visiblePages"
+            :key="page"
+            @click="goToPage(page)"
+            class="px-3 py-1 rounded-lg text-sm font-medium transition-colors"
+            :class="currentPage === page 
+              ? 'bg-indigo-600 text-white' 
+              : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'"
+          >
+            {{ page }}
+          </button>
+          
+          <span v-if="visiblePages[visiblePages.length - 1] < totalPages - 1" class="px-2 text-gray-400">...</span>
+          <button
+            v-if="visiblePages[visiblePages.length - 1] < totalPages"
+            @click="goToPage(totalPages)"
+            class="px-3 py-1 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            {{ totalPages }}
+          </button>
+          
+          <button
+            @click="goToPage(currentPage + 1)"
+            :disabled="currentPage === totalPages"
+            class="px-3 py-1 rounded-lg text-sm font-medium transition-colors"
+            :class="currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'"
+          >
+            →
+          </button>
+        </div>
       </div>
     </div>
 
