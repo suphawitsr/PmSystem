@@ -298,9 +298,11 @@ const saveAssign = async () => {
         <p class="text-sm text-indigo-100">{{ selectedEquipment?.name }}</p>
       </div>
 
-      <div class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
-        <!-- Equipment Details Card -->
-        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-3">
+      <div class="flex flex-col max-h-[80vh]">
+        <!-- Scrollable Content -->
+        <div class="p-6 space-y-5 overflow-y-auto flex-1">
+          <!-- Equipment Details Card -->
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-3">
           <h4 class="font-semibold text-gray-800 dark:text-gray-200 text-sm uppercase tracking-wide">รายละเอียดอุปกรณ์</h4>
 
           <div class="grid grid-cols-2 gap-3 text-sm">
@@ -466,8 +468,8 @@ const saveAssign = async () => {
           ></div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+        <!-- Sticky Footer Actions -->
+        <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
           <button @click="isAssignModalOpen = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors">ยกเลิก</button>
           <button @click="saveAssign" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
             บันทึก
