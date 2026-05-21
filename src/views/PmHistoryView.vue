@@ -64,45 +64,81 @@ const exportExcel = () => {
   const workbook = XLSX.utils.book_new()
   const worksheet = XLSX.utils.aoa_to_sheet([])
 
-  // Report header rows
-  XLSX.utils.sheet_add_aoa(worksheet, [
-    [`รายงานประวัติการ PM ของอุปกรณ์`],
-    [`ตั้งแต่: ${fromLabel}   ถึง: ${toLabel}`],
-    [],
-    ['ลำดับ', 'วันที่ PM', 'อุปกรณ์', 'Serial No.', 'กลุ่ม', 'Zone', 'ผู้ดำเนินการ', 'ค่าใช้จ่าย (บาท)', 'รายละเอียด'],
-  ])
+  // Check if filtering by a specific equipment (single equipment in results)
+  const uniqueEquipments = [...new Set(filteredRecords.value.map(r => r.equipment?.id))]
+  const isSingleEquipment = uniqueEquipments.length === 1 && uniqueEquipments[0] !== undefined
 
-  // Data rows
-  const dataRows = filteredRecords.value.map((r, index) => [
-    index + 1,
-    format(new Date(r.pmDate), 'dd/MM/yyyy'),
-    r.equipment?.name || '-',
-    r.equipment?.serialNumber || '-',
-    r.equipment?.equipmentGroup || '-',
-    r.equipment?.zoneCode || '-',
-    r.staff ? (r.staff.name || r.staff.username) : 'N/A',
-    Number(r.cost || 0),
-    r.details || '-',
-  ])
+  if (isSingleEquipment) {
+    // Single equipment format (like the image)
+    const equipment = filteredRecords.value[0]?.equipment
+    const equipmentCode = equipment?.serialNumber || equipment?.name || 'N/A'
 
-  XLSX.utils.sheet_add_aoa(worksheet, dataRows, { origin: 'A5' })
+    // Report header rows
+    XLSX.utils.sheet_add_aoa(worksheet, [
+      [`รายงานประวัติการ PM ของอุปกรณ์ ${equipmentCode}`],
+      [`ตั้งแต่ : ${fromLabel} ถึง ${toLabel}`],
+      [],
+      ['No', 'วันที่ PM อุปกรณ์', 'ผู้ดำเนินการ'],
+    ])
 
-  // Total row
-  XLSX.utils.sheet_add_aoa(worksheet, [
-    [],
-    ['', '', '', '', '', '', 'รวมค่าใช้จ่าย', filteredRecords.value.reduce((s, r) => s + Number(r.cost || 0), 0), ''],
-  ], { origin: { r: 4 + dataRows.length + 1, c: 0 } })
+    // Data rows - sorted by PM date
+    const sortedRecords = [...filteredRecords.value].sort((a, b) => new Date(a.pmDate).getTime() - new Date(b.pmDate).getTime())
+    const dataRows = sortedRecords.map((r, index) => [
+      index + 1,
+      format(new Date(r.pmDate), 'd/M/yyyy'),
+      r.staff ? (r.staff.name || r.staff.username) : 'N/A',
+    ])
 
-  // Column widths
-  worksheet['!cols'] = [
-    { wch: 6 }, { wch: 14 }, { wch: 24 }, { wch: 18 }, { wch: 10 },
-    { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 40 },
-  ]
+    XLSX.utils.sheet_add_aoa(worksheet, dataRows, { origin: 'A5' })
 
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'PM Report')
+    // Column widths for single equipment format
+    worksheet['!cols'] = [
+      { wch: 6 }, { wch: 20 }, { wch: 25 }
+    ]
 
-  const filename = `รายงาน_PM_${fromLabel.replace(/\//g, '-')}_ถึง_${toLabel.replace(/\//g, '-')}.xlsx`
-  XLSX.writeFile(workbook, filename)
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'PM Report')
+    const filename = `รายงาน_PM_${equipmentCode}_${fromLabel.replace(/\//g, '-')}_ถึง_${toLabel.replace(/\//g, '-')}.xlsx`
+    XLSX.writeFile(workbook, filename)
+  } else {
+    // Multi-equipment format (original comprehensive format)
+    XLSX.utils.sheet_add_aoa(worksheet, [
+      [`รายงานประวัติการ PM ของอุปกรณ์`],
+      [`ตั้งแต่: ${fromLabel}   ถึง: ${toLabel}`],
+      [],
+      ['ลำดับ', 'วันที่ PM', 'อุปกรณ์', 'Serial No.', 'กลุ่ม', 'Zone', 'ผู้ดำเนินการ', 'ค่าใช้จ่าย (บาท)', 'รายละเอียด'],
+    ])
+
+    // Data rows
+    const dataRows = filteredRecords.value.map((r, index) => [
+      index + 1,
+      format(new Date(r.pmDate), 'dd/MM/yyyy'),
+      r.equipment?.name || '-',
+      r.equipment?.serialNumber || '-',
+      r.equipment?.equipmentGroup || '-',
+      r.equipment?.zoneCode || '-',
+      r.staff ? (r.staff.name || r.staff.username) : 'N/A',
+      Number(r.cost || 0),
+      r.details || '-',
+    ])
+
+    XLSX.utils.sheet_add_aoa(worksheet, dataRows, { origin: 'A5' })
+
+    // Total row
+    XLSX.utils.sheet_add_aoa(worksheet, [
+      [],
+      ['', '', '', '', '', '', 'รวมค่าใช้จ่าย', filteredRecords.value.reduce((s, r) => s + Number(r.cost || 0), 0), ''],
+    ], { origin: { r: 4 + dataRows.length + 1, c: 0 } })
+
+    // Column widths
+    worksheet['!cols'] = [
+      { wch: 6 }, { wch: 14 }, { wch: 24 }, { wch: 18 }, { wch: 10 },
+      { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 40 },
+    ]
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'PM Report')
+    const filename = `รายงาน_PM_${fromLabel.replace(/\//g, '-')}_ถึง_${toLabel.replace(/\//g, '-')}.xlsx`
+    XLSX.writeFile(workbook, filename)
+  }
 }
 </script>
 
