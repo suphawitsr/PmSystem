@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import '../config/api' // Sets axios.defaults.baseURL
 import { format } from 'date-fns'
 import { PlusIcon, PencilSquareIcon, TrashIcon, UserPlusIcon } from '@heroicons/vue/24/outline'
+
+const route = useRoute()
 
 const equipments = ref<any[]>([])
 const staffs = ref<any[]>([])
@@ -135,6 +138,14 @@ const fetchStaffs = async () => {
 onMounted(() => {
   fetchEquipment()
   fetchStaffs()
+})
+
+watch(() => route.path, () => {
+  if (route.path === '/equipment') {
+    loading.value = true
+    fetchEquipment()
+    fetchStaffs()
+  }
 })
 
 

@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import '../config/api' // Sets axios.defaults.baseURL
 import { format, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns'
 import { WrenchScrewdriverIcon, ClipboardDocumentCheckIcon, ClockIcon } from '@heroicons/vue/24/outline'
+
+const route = useRoute()
 
 const equipments = ref<any[]>([])
 const pmRecords = ref<any[]>([])
@@ -41,6 +44,15 @@ onMounted(() => {
   fetchMyEquipment()
   fetchMyPmRecords()
   loading.value = false
+})
+
+watch(() => route.path, () => {
+  if (route.path === '/my-tasks') {
+    loading.value = true
+    fetchMyEquipment()
+    fetchMyPmRecords()
+    loading.value = false
+  }
 })
 
 const openPm = (eq: any) => {

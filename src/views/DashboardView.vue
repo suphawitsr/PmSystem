@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import '../config/api' // Sets axios.defaults.baseURL
 import { format, isBefore, addDays, startOfMonth } from 'date-fns'
 import { ExclamationTriangleIcon, CheckCircleIcon, BellIcon } from '@heroicons/vue/24/outline'
+
+const route = useRoute()
 
 const equipments = ref<any[]>([])
 const staffs = ref<any[]>([])
@@ -42,10 +45,21 @@ const fetchPmRecords = async () => {
   }
 }
 
-onMounted(() => {
+const loadData = () => {
+  loading.value = true
   fetchEquipment()
   fetchPmRecords()
   fetchStaffs()
+}
+
+onMounted(() => {
+  loadData()
+})
+
+watch(() => route.path, () => {
+  if (route.path === '/') {
+    loadData()
+  }
 })
 
 // Compute completed PMs within selected month range

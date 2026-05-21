@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import '../config/api' // Sets axios.defaults.baseURL
 import { format } from 'date-fns'
 import * as XLSX from 'xlsx'
 import { DocumentArrowDownIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+
+const route = useRoute()
 
 const pmRecords = ref<any[]>([])
 const loading = ref(true)
@@ -31,6 +34,13 @@ const fetchPmRecords = async () => {
 
 onMounted(() => {
   fetchPmRecords()
+})
+
+watch(() => route.path, () => {
+  if (route.path === '/pm-history') {
+    loading.value = true
+    fetchPmRecords()
+  }
 })
 
 const filteredRecords = computed(() => {

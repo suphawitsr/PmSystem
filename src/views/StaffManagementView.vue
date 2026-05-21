@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import '../config/api' // Sets axios.defaults.baseURL
 import { PlusIcon, KeyIcon, TrashIcon, PencilSquareIcon } from '@heroicons/vue/24/outline'
+
+const route = useRoute()
 
 const staffs = ref<any[]>([])
 const loading = ref(true)
@@ -38,6 +41,13 @@ const fetchStaffs = async () => {
 
 onMounted(() => {
   fetchStaffs()
+})
+
+watch(() => route.path, () => {
+  if (route.path === '/staff') {
+    loading.value = true
+    fetchStaffs()
+  }
 })
 
 const addStaff = async () => {
