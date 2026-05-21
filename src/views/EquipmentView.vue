@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import '../config/api' // Sets axios.defaults.baseURL
 import { format } from 'date-fns'
 import { PlusIcon, PencilSquareIcon, TrashIcon, UserPlusIcon } from '@heroicons/vue/24/outline'
 
@@ -56,7 +57,7 @@ const unassignedCount = computed(() => equipments.value.filter(e => !e.assignedS
 
 const fetchEquipment = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/equipment')
+    const res = await axios.get('/api/equipment')
     equipments.value = res.data
   } catch (error) {
     console.error('Failed to fetch equipment', error)
@@ -68,7 +69,7 @@ const fetchEquipment = async () => {
 const fetchStaffs = async () => {
   if (!isAdmin.value) return
   try {
-    const res = await axios.get('http://localhost:3000/user')
+    const res = await axios.get('/user')
     staffs.value = res.data
   } catch (error) {
     console.error('Failed to fetch staffs', error)
@@ -83,7 +84,7 @@ onMounted(() => {
 
 const addEquipment = async () => {
   try {
-    await axios.post('http://localhost:3000/api/equipment', newEquipment.value)
+    await axios.post('/api/equipment', newEquipment.value)
     isAddModalOpen.value = false
     newEquipment.value = { equipmentGroup: 'PC', type: '', serialNumber: '', brand: '', model: '', name: '', zoneCode: '', assignedStaffId: '' }
     fetchEquipment()
@@ -100,7 +101,7 @@ const openEdit = (eq: any) => {
 const saveEdit = async () => {
   try {
     const { id, assignedStaff, createdAt, lastPmDate, nextPmDate, ...payload } = editForm.value
-    await axios.patch(`http://localhost:3000/api/equipment/${id}`, payload)
+    await axios.patch(`/api/equipment/${id}`, payload)
     isEditModalOpen.value = false
     fetchEquipment()
   } catch (error) {
@@ -111,7 +112,7 @@ const saveEdit = async () => {
 const deleteEquipment = async (id: string) => {
   if (!confirm('ต้องการลบอุปกรณ์นี้ใช่ไหม?')) return
   try {
-    await axios.delete(`http://localhost:3000/api/equipment/${id}`)
+    await axios.delete(`/api/equipment/${id}`)
     fetchEquipment()
   } catch (error) {
     console.error('Failed to delete equipment', error)
@@ -127,7 +128,7 @@ const openAssign = (eq: any) => {
 
 const saveAssign = async () => {
   try {
-    await axios.patch(`http://localhost:3000/api/equipment/${selectedEquipment.value.id}`, {
+    await axios.patch(`/api/equipment/${selectedEquipment.value.id}`, {
       assignedStaffId: assignStaffId.value || null
     })
     isAssignModalOpen.value = false

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import '../config/api' // Sets axios.defaults.baseURL
 import { format, isBefore, addDays, startOfMonth } from 'date-fns'
 import { ExclamationTriangleIcon, CheckCircleIcon, BellIcon } from '@heroicons/vue/24/outline'
 
@@ -15,7 +16,7 @@ const filterTo = ref(format(new Date(), 'yyyy-MM'))
 
 const fetchEquipment = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/equipment')
+    const res = await axios.get('/api/equipment')
     equipments.value = res.data
   } catch (error) {
     console.error('Failed to fetch equipment', error)
@@ -26,7 +27,7 @@ const fetchEquipment = async () => {
 
 const fetchPmRecords = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/pm-record')
+    const res = await axios.get('/api/pm-record')
     pmRecords.value = res.data
   } catch (error) {
     console.error('Failed to fetch PM records', error)

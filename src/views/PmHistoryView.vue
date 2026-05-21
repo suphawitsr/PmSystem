@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import '../config/api' // Sets axios.defaults.baseURL
 import { format } from 'date-fns'
 import * as XLSX from 'xlsx'
 import { DocumentArrowDownIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline'
@@ -19,7 +20,7 @@ const selectedRecord = ref<any>(null)
 
 const fetchPmRecords = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/pm-record')
+    const res = await axios.get('/api/pm-record')
     pmRecords.value = res.data
   } catch (error) {
     console.error('Failed to fetch PM records', error)

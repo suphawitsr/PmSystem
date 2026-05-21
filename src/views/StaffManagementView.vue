@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import '../config/api' // Sets axios.defaults.baseURL
 import { PlusIcon, KeyIcon, TrashIcon, PencilSquareIcon } from '@heroicons/vue/24/outline'
 
 const staffs = ref<any[]>([])
@@ -26,7 +27,7 @@ const editForm = ref({
 
 const fetchStaffs = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/user')
+    const res = await axios.get('/user')
     staffs.value = res.data
   } catch (error) {
     console.error('Failed to fetch staffs', error)
@@ -41,7 +42,7 @@ onMounted(() => {
 
 const addStaff = async () => {
   try {
-    await axios.post('http://localhost:3000/auth/register', newStaff.value)
+    await axios.post('/auth/register', newStaff.value)
     isAddModalOpen.value = false
     newStaff.value = { username: '', password: '', name: '', role: 'STAFF' }
     fetchStaffs()
@@ -76,7 +77,7 @@ const updateStaff = async () => {
     if (editForm.value.password) {
       payload.password = editForm.value.password
     }
-    await axios.patch(`http://localhost:3000/user/${selectedStaff.value.id}`, payload)
+    await axios.patch(`/user/${selectedStaff.value.id}`, payload)
     isEditModalOpen.value = false
     editForm.value = { name: '', role: 'STAFF', password: '' }
     fetchStaffs()
@@ -90,7 +91,7 @@ const updateStaff = async () => {
 const updatePassword = async () => {
   if (!editForm.value.password) return
   try {
-    await axios.patch(`http://localhost:3000/user/${selectedStaff.value.id}`, { password: editForm.value.password })
+    await axios.patch(`/user/${selectedStaff.value.id}`, { password: editForm.value.password })
     isEditPasswordModalOpen.value = false
     editForm.value.password = ''
     alert('Password updated successfully')
@@ -102,7 +103,7 @@ const updatePassword = async () => {
 const deleteStaff = async (id: string) => {
   if (!confirm('Are you sure you want to delete this staff?')) return
   try {
-    await axios.delete(`http://localhost:3000/user/${id}`)
+    await axios.delete(`/user/${id}`)
     fetchStaffs()
   } catch (error) {
     console.error('Failed to delete staff', error)

@@ -11,6 +11,7 @@ import {
   ClipboardDocumentCheckIcon,
 } from '@heroicons/vue/24/outline'
 import axios from 'axios'
+import './config/api' // Sets axios.defaults.baseURL
 
 const route = useRoute()
 const router = useRouter()
@@ -42,7 +43,7 @@ const pendingEquipments = computed(() => {
 
 const fetchAssigned = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/equipment')
+    const res = await axios.get('/api/equipment')
     assignedEquipments.value = res.data.filter((e: any) => e.assignedStaffId === user.value.id)
   } catch {}
 }

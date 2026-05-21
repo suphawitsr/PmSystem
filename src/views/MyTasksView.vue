@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import '../config/api' // Sets axios.defaults.baseURL
 import { format, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns'
 import { WrenchScrewdriverIcon, ClipboardDocumentCheckIcon, ClockIcon } from '@heroicons/vue/24/outline'
 
@@ -18,7 +19,7 @@ const filterTo = ref(format(endOfMonth(new Date()), 'yyyy-MM-dd'))
 
 const fetchMyEquipment = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/equipment')
+    const res = await axios.get('/api/equipment')
     // Filter only assigned to me
     equipments.value = res.data.filter((e: any) => e.assignedStaffId === user.value.id)
   } catch (error) {
@@ -28,7 +29,7 @@ const fetchMyEquipment = async () => {
 
 const fetchMyPmRecords = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/pm-record')
+    const res = await axios.get('/api/pm-record')
     // Filter only my records
     pmRecords.value = res.data.filter((r: any) => r.staffId === user.value.id)
   } catch (error) {
@@ -50,7 +51,7 @@ const openPm = (eq: any) => {
 
 const recordPm = async () => {
   try {
-    await axios.post('http://localhost:3000/api/pm-record', {
+    await axios.post('/api/pm-record', {
       equipmentId: selectedEquipment.value.id,
       pmDate: pmForm.value.pmDate,
       details: pmForm.value.details,

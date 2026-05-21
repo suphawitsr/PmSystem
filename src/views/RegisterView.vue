@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import '../config/api' // Sets axios.defaults.baseURL
 
 const router = useRouter()
 const name = ref('')
@@ -13,7 +14,7 @@ const errorMsg = ref('')
 const register = async () => {
   try {
     errorMsg.value = ''
-    await axios.post('http://localhost:3000/auth/register', {
+    await axios.post('/auth/register', {
       name: name.value,
       username: username.value,
       password: password.value,
