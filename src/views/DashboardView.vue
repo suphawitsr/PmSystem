@@ -467,7 +467,7 @@ const saveAssign = async () => {
             class="fixed inset-0 z-40"
           ></div>
         </div>
-
+</div>
         <!-- Sticky Footer Actions -->
         <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
           <button @click="isAssignModalOpen = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors">ยกเลิก</button>
