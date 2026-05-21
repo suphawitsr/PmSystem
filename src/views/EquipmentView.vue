@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import '../config/api' // Sets axios.defaults.baseURL
 import { format } from 'date-fns'
@@ -108,12 +108,11 @@ const filteredEquipments = computed(() => {
     filtered = filtered.filter(e => e.zoneCode === zoneFilter.value)
   }
   
-  // Reset to page 1 when filters change
-  if (currentPage.value > Math.ceil(filtered.length / itemsPerPage)) {
-    currentPage.value = 1
-  }
-  
   return filtered
+})
+
+watch([searchQuery, assignmentFilter, groupFilter, zoneFilter], () => {
+  currentPage.value = 1
 })
 
 const assignedCount = computed(() => equipments.value.filter(e => e.assignedStaffId).length)
