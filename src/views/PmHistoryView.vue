@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import '../config/api' // Sets axios.defaults.baseURL
 import { format } from 'date-fns'
-import * as XLSX from 'xlsx-js-style'
+import * as XLSX from 'xlsx'
 import { DocumentArrowDownIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 const pmRecords = ref<any[]>([])
