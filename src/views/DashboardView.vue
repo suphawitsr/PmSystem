@@ -309,16 +309,20 @@ const saveAssign = async () => {
               <div class="font-medium text-gray-800 dark:text-gray-200">{{ selectedEquipment?.serialNumber || '-' }}</div>
             </div>
             <div>
+              <span class="text-gray-500 dark:text-gray-400">กลุ่ม:</span>
+              <div class="font-medium text-gray-800 dark:text-gray-200">{{ selectedEquipment?.equipmentGroup || '-' }}</div>
+            </div>
+            <div>
               <span class="text-gray-500 dark:text-gray-400">ประเภท:</span>
               <div class="font-medium text-gray-800 dark:text-gray-200">{{ selectedEquipment?.type || '-' }}</div>
             </div>
             <div>
-              <span class="text-gray-500 dark:text-gray-400">แบรนด์/รุ่น:</span>
-              <div class="font-medium text-gray-800 dark:text-gray-200">{{ selectedEquipment?.brand }} {{ selectedEquipment?.model }}</div>
-            </div>
-            <div>
               <span class="text-gray-500 dark:text-gray-400">Zone:</span>
               <div class="font-medium text-gray-800 dark:text-gray-200">{{ selectedEquipment?.zoneCode || '-' }}</div>
+            </div>
+            <div class="col-span-2">
+              <span class="text-gray-500 dark:text-gray-400">แบรนด์/รุ่น:</span>
+              <div class="font-medium text-gray-800 dark:text-gray-200">{{ selectedEquipment?.brand }} {{ selectedEquipment?.model }}</div>
             </div>
           </div>
 
@@ -389,70 +393,68 @@ const saveAssign = async () => {
           </div>
 
           <!-- Selected Staff Preview -->
-          <div v-if="assignStaffId" class="flex items-center justify-between bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg px-3 py-2">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-medium">
-                {{ (staffs.find(s => s.id === assignStaffId)?.name || staffs.find(s => s.id === assignStaffId)?.username || '?')[0] }}
-              </div>
+          <div v-if="assignStaffId" class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg px-4 py-2">
+            <div class="flex items-center justify-between">
               <div>
                 <div class="font-medium text-indigo-900 dark:text-indigo-200">
                   {{ staffs.find(s => s.id === assignStaffId)?.name || staffs.find(s => s.id === assignStaffId)?.username }}
                 </div>
                 <div v-if="staffs.find(s => s.id === assignStaffId)?.name" class="text-xs text-indigo-600 dark:text-indigo-400">
-                  {{ staffs.find(s => s.id === assignStaffId)?.username }}
+                  @{{ staffs.find(s => s.id === assignStaffId)?.username }}
                 </div>
               </div>
+              <span class="text-xs bg-indigo-600 text-white px-2 py-1 rounded-full font-medium">เลือกแล้ว</span>
             </div>
-            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium">✓ เลือกแล้ว</span>
           </div>
 
-          <!-- Staff List -->
-          <div
-            v-if="isStaffDropdownOpen || staffSearchQuery"
-            class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
-          >
-            <div class="max-h-48 overflow-y-auto">
-              <!-- Unassign option -->
-              <div
-                @click="selectStaff('')"
-                class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700"
-                :class="{ 'bg-indigo-50 dark:bg-indigo-900/20': !assignStaffId }"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                    <span class="text-gray-500 text-lg">-</span>
-                  </div>
-                  <div class="text-gray-600 dark:text-gray-400">ยังไม่มอบหมาย (Unassign)</div>
-                </div>
-              </div>
+          <!-- Staff List - Compact Table View -->
+          <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+            <div class="max-h-56 overflow-y-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0">
+                  <tr>
+                    <th class="text-left px-3 py-2 font-medium text-gray-600 dark:text-gray-400">ชื่อ</th>
+                    <th class="text-left px-3 py-2 font-medium text-gray-600 dark:text-gray-400">Username</th>
+                    <th class="text-center px-3 py-2 font-medium text-gray-600 dark:text-gray-400 w-16">สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Unassign option -->
+                  <tr
+                    @click="selectStaff('')"
+                    class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700"
+                    :class="{ 'bg-indigo-50 dark:bg-indigo-900/20': !assignStaffId }"
+                  >
+                    <td colspan="2" class="px-3 py-2 text-gray-500 italic">
+                      — ยังไม่มอบหมาย (Unassign) —
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                      <span v-if="!assignStaffId" class="text-indigo-600 font-bold">✓</span>
+                    </td>
+                  </tr>
 
-              <!-- Staff Items -->
-              <div
-                v-for="s in filteredStaffs"
-                :key="s.id"
-                @click="selectStaff(s.id)"
-                class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0"
-                :class="{ 'bg-indigo-50 dark:bg-indigo-900/20': assignStaffId === s.id }"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center text-sm font-medium">
-                    {{ (s.name || s.username)[0] }}
-                  </div>
-                  <div>
-                    <div class="font-medium text-gray-900 dark:text-gray-200">{{ s.name || s.username }}</div>
-                    <div v-if="s.name" class="text-xs text-gray-500">{{ s.username }}</div>
-                  </div>
-                  <div v-if="assignStaffId === s.id" class="ml-auto text-indigo-600">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
+                  <!-- Staff Items -->
+                  <tr
+                    v-for="s in filteredStaffs"
+                    :key="s.id"
+                    @click="selectStaff(s.id)"
+                    class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0"
+                    :class="{ 'bg-indigo-50 dark:bg-indigo-900/20': assignStaffId === s.id }"
+                  >
+                    <td class="px-3 py-2 font-medium text-gray-900 dark:text-gray-200">{{ s.name || s.username }}</td>
+                    <td class="px-3 py-2 text-gray-500">{{ s.username }}</td>
+                    <td class="px-3 py-2 text-center">
+                      <span v-if="assignStaffId === s.id" class="text-indigo-600 font-bold">✓</span>
+                    </td>
+                  </tr>
 
-              <div v-if="filteredStaffs.length === 0" class="px-4 py-4 text-center text-gray-400 text-sm">
-                ไม่พบผู้ใช้ที่ตรงกับ "{{ staffSearchQuery }}"
-              </div>
+                  <tr v-if="filteredStaffs.length === 0">
+                    <td colspan="3" class="px-4 py-4 text-center text-gray-400">
+                      ไม่พบผู้ใช้ที่ตรงกับ "{{ staffSearchQuery }}"
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
