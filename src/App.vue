@@ -248,23 +248,11 @@ const goToMyTasks = () => {
 
       <!-- Page Content -->
       <div class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900" :class="{ 'p-8': !isAuthRoute }">
-        <RouterView v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </RouterView>
+        <RouterView />
       </div>
     </main>
   </div>
 </template>
 
 <style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
 </style>
