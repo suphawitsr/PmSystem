@@ -34,7 +34,45 @@ const editForm = ref<any>({})
 
 const isAdmin = computed(() => user.value.role === 'ADMIN')
 
-// Pagination
+// Filter refs (declared before filteredEquipments computed)
+const assignmentFilter = ref<'all' | 'assigned' | 'unassigned'>('all')
+const groupFilter = ref<'all' | 'COMPUTER' | 'PRINTER' | 'NETWORK'>('all')
+const zoneFilter = ref<string>('all')
+
+// Get unique zones from equipment data
+const availableZones = computed(() => {
+  const zones = new Set<string>()
+  equipments.value.forEach(e => {
+    if (e.zoneCode) zones.add(e.zoneCode)
+  })
+  return Array.from(zones).sort()
+})
+
+const filteredEquipments = computed(() => {
+  let filtered = equipments.value.filter(e =>
+    !searchQuery.value ||
+    e.name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    e.serialNumber?.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+  
+  if (assignmentFilter.value === 'assigned') {
+    filtered = filtered.filter(e => e.assignedStaffId)
+  } else if (assignmentFilter.value === 'unassigned') {
+    filtered = filtered.filter(e => !e.assignedStaffId)
+  }
+  
+  if (groupFilter.value !== 'all') {
+    filtered = filtered.filter(e => e.equipmentGroup === groupFilter.value)
+  }
+  
+  if (zoneFilter.value !== 'all') {
+    filtered = filtered.filter(e => e.zoneCode === zoneFilter.value)
+  }
+  
+  return filtered
+})
+
+// Pagination (declared after filteredEquipments)
 const currentPage = ref(1)
 const itemsPerPage = 10
 
@@ -57,58 +95,13 @@ const visiblePages = computed(() => {
   const maxVisible = 5
   let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
   let end = Math.min(totalPages.value, start + maxVisible - 1)
-  
   if (end - start + 1 < maxVisible) {
     start = Math.max(1, end - maxVisible + 1)
   }
-  
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
   return pages
-})
-
-// Assignment filter
-const assignmentFilter = ref<'all' | 'assigned' | 'unassigned'>('all')
-
-// Group and Zone filters
-const groupFilter = ref<'all' | 'COMPUTER' | 'PRINTER' | 'NETWORK'>('all')
-const zoneFilter = ref<string>('all')
-
-// Get unique zones from equipment data
-const availableZones = computed(() => {
-  const zones = new Set<string>()
-  equipments.value.forEach(e => {
-    if (e.zoneCode) zones.add(e.zoneCode)
-  })
-  return Array.from(zones).sort()
-})
-
-const filteredEquipments = computed(() => {
-  let filtered = equipments.value.filter(e =>
-    !searchQuery.value ||
-    e.name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    e.serialNumber?.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-  
-  // Apply assignment filter
-  if (assignmentFilter.value === 'assigned') {
-    filtered = filtered.filter(e => e.assignedStaffId)
-  } else if (assignmentFilter.value === 'unassigned') {
-    filtered = filtered.filter(e => !e.assignedStaffId)
-  }
-  
-  // Apply group filter
-  if (groupFilter.value !== 'all') {
-    filtered = filtered.filter(e => e.equipmentGroup === groupFilter.value)
-  }
-  
-  // Apply zone filter
-  if (zoneFilter.value !== 'all') {
-    filtered = filtered.filter(e => e.zoneCode === zoneFilter.value)
-  }
-  
-  return filtered
 })
 
 watch([searchQuery, assignmentFilter, groupFilter, zoneFilter], () => {
