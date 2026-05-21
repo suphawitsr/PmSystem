@@ -35,6 +35,19 @@ const isAdmin = computed(() => user.value.role === 'ADMIN')
 // Assignment filter
 const assignmentFilter = ref<'all' | 'assigned' | 'unassigned'>('all')
 
+// Group and Zone filters
+const groupFilter = ref<'all' | 'COMPUTER' | 'PRINTER' | 'NETWORK'>('all')
+const zoneFilter = ref<string>('all')
+
+// Get unique zones from equipment data
+const availableZones = computed(() => {
+  const zones = new Set<string>()
+  equipments.value.forEach(e => {
+    if (e.zoneCode) zones.add(e.zoneCode)
+  })
+  return Array.from(zones).sort()
+})
+
 const filteredEquipments = computed(() => {
   let filtered = equipments.value.filter(e =>
     !searchQuery.value ||
@@ -47,6 +60,16 @@ const filteredEquipments = computed(() => {
     filtered = filtered.filter(e => e.assignedStaffId)
   } else if (assignmentFilter.value === 'unassigned') {
     filtered = filtered.filter(e => !e.assignedStaffId)
+  }
+  
+  // Apply group filter
+  if (groupFilter.value !== 'all') {
+    filtered = filtered.filter(e => e.equipmentGroup === groupFilter.value)
+  }
+  
+  // Apply zone filter
+  if (zoneFilter.value !== 'all') {
+    filtered = filtered.filter(e => e.zoneCode === zoneFilter.value)
   }
   
   return filtered
@@ -150,6 +173,22 @@ const saveAssign = async () => {
           placeholder="ค้นหาชื่อ / Serial No."
           class="pl-4 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-indigo-500 w-52"
         />
+        <select
+          v-model="groupFilter"
+          class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="all">ทุกกลุ่ม</option>
+          <option value="COMPUTER">Computer</option>
+          <option value="PRINTER">Printer</option>
+          <option value="NETWORK">Network</option>
+        </select>
+        <select
+          v-model="zoneFilter"
+          class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="all">ทุกโซน</option>
+          <option v-for="zone in availableZones" :key="zone" :value="zone">{{ zone }}</option>
+        </select>
         <button
           v-if="isAdmin"
           @click="isAddModalOpen = true"
