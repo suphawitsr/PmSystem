@@ -330,6 +330,7 @@ const saveAssign = async () => {
               <th class="px-6 py-4">กลุ่ม</th>
               <th class="px-6 py-4">Brand / Model</th>
               <th class="px-6 py-4">Zone</th>
+              <th class="px-6 py-4">Text Log</th>
               <th class="px-6 py-4">สถานะ</th>
               <th class="px-6 py-4">Last PM</th>
               <th class="px-6 py-4">Next PM</th>
@@ -338,10 +339,10 @@ const saveAssign = async () => {
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
             <tr v-if="loading" class="animate-pulse">
-              <td colspan="7" class="px-6 py-8 text-center text-gray-500">กำลังโหลดข้อมูล...</td>
+              <td colspan="8" class="px-6 py-8 text-center text-gray-500">กำลังโหลดข้อมูล...</td>
             </tr>
             <tr v-else-if="filteredEquipments.length === 0">
-              <td colspan="7" class="px-6 py-8 text-center text-gray-500">ไม่พบอุปกรณ์</td>
+              <td colspan="8" class="px-6 py-8 text-center text-gray-500">ไม่พบอุปกรณ์</td>
             </tr>
             <tr
               v-for="eq in paginatedEquipments"
@@ -359,6 +360,7 @@ const saveAssign = async () => {
               </td>
               <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ eq.brand }} {{ eq.model }}</td>
               <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ eq.zoneCode }}</td>
+              <td class="px-6 py-4 text-gray-700 dark:text-gray-300 max-w-48 truncate" :title="eq.textLog || '-'">{{ eq.textLog || '-' }}</td>
               <td class="px-6 py-4">
                 <div v-if="eq.assignedStaffId" class="flex items-center gap-2">
                   <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
