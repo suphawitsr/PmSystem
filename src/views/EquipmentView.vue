@@ -30,6 +30,7 @@ const newEquipment = ref({
   model: '',
   name: '',
   zoneCode: '',
+  textLog: '',
   assignedStaffId: ''
 })
 
@@ -153,7 +154,7 @@ const addEquipment = async () => {
   try {
     await axios.post('/api/equipment', newEquipment.value)
     isAddModalOpen.value = false
-    newEquipment.value = { equipmentGroup: 'COMPUTER', type: '', serialNumber: '', brand: '', model: '', name: '', zoneCode: '', assignedStaffId: '' }
+    newEquipment.value = { equipmentGroup: 'COMPUTER', type: '', serialNumber: '', brand: '', model: '', name: '', zoneCode: '', textLog: '', assignedStaffId: '' }
     fetchEquipment()
   } catch (error) {
     console.error('Failed to add equipment', error)
@@ -512,6 +513,10 @@ const saveAssign = async () => {
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Equipment Name</label>
               <input v-model="newEquipment.name" type="text" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700" />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Text Log</label>
+              <textarea v-model="newEquipment.textLog" rows="3" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700"></textarea>
             </div>
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign to Staff (Optional)</label>
